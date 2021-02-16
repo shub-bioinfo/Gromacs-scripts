@@ -1,0 +1,146 @@
+#!/bin/bash
+#case menu
+
+clear
+#1. FOR RMSD CALCULATION
+rmsd()
+{
+  echo -e "\ngmx rms for estiamting RMSD in gromacs.\n"
+  echo -e " gmx rms -s mdrun.tpr -f mdrun_wrap.xtc -o rmsd.xvg -tu ns \n"
+}
+
+#2. FOR RMSF CALCULATION
+rmsf()
+{
+  echo -e "\ngmx rmsf for estiamting the RMSF in gromacs.\n"
+  echo -e "rmsf  -s mdrun.tpr -f mdrun_wrap.xtc  -res -o rmsf.xvg\n"
+}
+
+#3. TO CREATE THE INDEX FILE
+make_ndx()
+{
+  echo -e "\nFor making the index file in gromacs.\n"
+  echo -e " gmx make_ndx -f mdrun.gro -o index.ndx  \n"
+}
+
+#4. TO ESTIMATE THE ANGLE OR DIHEDRAL TIME PLOT AND DISTRIBUTION
+angles()
+{
+echo -e "\nIt will generate gmx_angles_dihedrals script having gromacs command."
+
+cat >gmx_angles_dihedrals <<EOF
+#!/bin/bash
+#This is the command to make index file for the angles and dihedrals.
+
+#gmx make_ndx -f em.gro -o index_dihedrals.ndx
+#gmx make_ndx -f em.gro -o index_angles.ndx
+
+output=phe-o-phe1
+#This is the command to make the angle and dihedral files -ov print time dependent value; -od prints the distribution.
+#gmx angle -f nvt-wrap.xtc -n index_dihedral.ndx -ov $output.xvg -od $output.xvg  -type dihedral
+gmx angle -f nvt-wrap.xtc -n index_angles.ndx -ov $output.xvg -od $output.xvg  -type angle
+
+EOF
+}
+
+#5. TO WRAP THE MD TRAJECTORY
+wrap()
+{
+  echo -e "\nThis is the script for wrapping and centering the trajectory. (enter 0 1)   \n "
+  echo -e "gmx trjconv -f mdrun.xtc -s mdrun.tpr -o mdrun_wrap.xtc -pbc mol -ur compact -center\n"
+}
+
+#6. TO DUMP THE PARTICULAR FRAME NUMBER
+dump_frame()
+{
+  echo -e "\nThis is the script for dumping any particular frame structure. (time in ps) \n"
+  echo -e "gmx trjconv -f mdrun_wrap.xtc -s mdrun.tpr -dump 16960 -o frame-str.gro     \n "
+}
+
+#7. TO RESTART THE CRASHED RUN
+crash()
+{
+  echo -e "\nThis is the script to restart the crashed trajectory. \n"
+  echo -e "\nTo append from the same name use the -APPEND option. \n"
+  echo -e " gmx mdrun -deffnm mdrun -cpi mdrun.cpt\n"
+}
+
+#8. TO EXTEND THE MD SIMULATION
+extend()
+{ 
+  echo -e "\nThis is the script to extend a stopped simulation.\n"  
+  echo -e "gmx convert-tpr -s mdrun.tpr -f mdrun.cpt -o mdrun.tpr -extend to-extend-ps\n"
+}
+
+#9. AMBER TO GROMACS PARMED SCRIPT
+amb-to-gro()
+{
+  echo -e "\nIt will generate amb-to-gro.py script to convert in gromacs format."
+
+cat > amb-to-gro.py <<EOF
+import parmed as pmd
+a=input("Enter the prmtop file > ")
+b=input("Enter the inpcrd file > ")
+
+amber = pmd.load_file(a, b)
+# Save a GROMACS topology and GRO file
+amber.save('gromacs5.top')
+amber.save('gromacs5.gro')
+EOF
+}
+
+#10. AUTODOCK RUN SCRIPT
+autodock()
+{ 
+  echo -e "\nThis is the script to run the Autodock docking run.\n"  
+cat > dock <<EOF
+file=protein
+autogrid4 -p \$file.gpf -l \$file.glg 
+autodock4 -p \$file.dpf -l \$file.dlg &
+echo 'grep "Free Energy of Binding"  *.dlg'
+EOF
+chmod +x dock
+
+}
+
+while true ;
+do
+echo -e "
+Please select:
+
+\033[0;105;30m
+1. RMSD             2. RMSF             3. Make_ndx         4. Angles/Dihedrals
+5. Wrapping         6. Dump_frame       7. Crash-start      8. Extend          
+9. Amber-to-Gromacs 10.AutoDock         0. EXIT            
+\033[0m"
+
+echo "Enter selection [1-7] 0 for EXIT:"
+read xyz
+
+#echo $xyz
+case $xyz in
+    1)   rmsd 
+         ;;
+    2)   rmsf
+         ;;
+    3)   make_ndx
+         ;;
+    4)   angles
+         ;;
+    5)   wrap
+         ;;
+    6)   dump_frame 
+         ;;
+    7)   crash 
+         ;;
+    8)   extend 
+         ;;
+    9)   amb-to-gro 
+         ;;
+    10)  autodock 
+         ;;
+    *)   echo "EXIT" >&2
+         exit 
+         ;;
+esac
+done
