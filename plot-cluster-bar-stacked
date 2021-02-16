@@ -1,0 +1,35 @@
+
+filename=cluster-plot.log
+gnuplot <<EOF
+
+set grid
+set auto x
+set style data histogram
+set style histogram rowstacked
+set style fill solid
+set boxwidth 0.8
+
+
+#For label in x and y axis
+set encoding iso_8859_1
+set ylabel "6000 Frames (30 ns trajectory)"
+set xlabel "Umbrella CV in ({\305}) "
+
+
+#To rotate the label and fit in it.
+set xtics rotate by 45
+set xtics font ',8' offset 0,-1
+
+#This is to set the title of the graph
+set title "Ligand heavy atoms clustering at RMSD cutoff 2 {\305}, Umbrella run (8,000 kJ/mol)"
+
+plot "$filename" us 2:xtic(1) lt  rgb 'red' title "Cluster 1", "" us 3 lt  rgb 'blue'  title "Cluster 2", "" us 4 lt  rgb 'green' title "Cluster 3"
+
+
+
+set terminal  pngcairo size 1024,720 enhanced color font 'Arial, 12'
+set output "cluster-barplot-stacked.png"
+replot
+
+EOF
+
