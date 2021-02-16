@@ -1,0 +1,59 @@
+#!/bin/bash
+#This script is for the sorting of H-bond Occupany.
+
+
+echo "This is the sorted file of H-bond Occupancy" > Hbond_Occupancy.log
+
+#for i in  05.25 ; do
+for i in `seq -w 05.00 0.25 15.00`; do
+
+if [ "$( echo "$i < 8.6" | bc -l )" -eq 1 ];
+then 
+   cd tassn-$i\disn_sep_1/03_cluster/
+else
+   cd tassn-$i\disn_sep/03_cluster/
+fi
+
+for j in `seq 1 5`; do
+
+#This is to print only those H-bonds present in more than 5% of the frames.
+awk 'NR==1{print;next}$5>1.00' summary_HBmap$j.dat > summary_HB$j.dat
+
+echo "#---------------------------------------------------------------------"  >> ../../Hbond_Occupancy.log
+echo "                   cbl-avi-TASS-$i-$j  H-bond Occupancy                    " >> ../../Hbond_Occupancy.log
+echo "#---------------------------------------------------------------------" >> ../../Hbond_Occupancy.log
+
+cat summary_HB$j.dat >> ../../Hbond_Occupancy.log
+echo  "----------------------------------------------------------" >> ../../Hbond_Occupancy.log
+
+#This is for the sorting of Neck region of the Avibactam. O and O1
+
+#This is to print if in column, exactly mathche "==" statement.
+echo " Cbl-avi-TASS-$i-$j : Oxyanion" >> ../../Hbond_Occupancy.log
+awk ' $4=="O2"' summary_HB$j.dat >> ../../Hbond_Occupancy.log
+echo  "----------------------------------------------------------" >> ../../Hbond_Occupancy.log 
+
+#This awk script is to print if any of in column four, OR ";" statement.
+echo " Cbl-avi-TASS-$i-$j : Top H-bonds" >> ../../Hbond_Occupancy.log 
+awk ' $4=="O4"; $4=="O5"; $4=="O6"' summary_HB$j.dat >> ../../Hbond_Occupancy.log
+echo  >> ../../Hbond_Occupancy.log
+awk ' $4=="O4"; $4=="O5"; $4=="O6"' summary_HB$j.dat | awk '{a[$1]+=$5}END{for(i in a) print i,a[i]}'  >> ../../Hbond_Occupancy.log
+echo "--------" >> ../../Hbond_Occupancy.log 
+awk ' $4=="O4"; $4=="O5"; $4=="O6"' summary_HB$j.dat | awk '{a[$1,$2]+=$5}END{for(i in a) print i,a[i]}'  >> ../../Hbond_Occupancy.log
+
+
+echo  "---------------------------------------------------------" >> ../../Hbond_Occupancy.log 
+
+#This awk script is not to print if any of in column four, AND "&&" statement.
+echo " Cbl-avi-TASS-$i-$j : Tail H-bonds" >> ../../Hbond_Occupancy.log
+awk 'NR!=1 && $4!="O2" && $4!="O4" && $4!="O5" && $4!="O6"' summary_HB$j.dat >> ../../Hbond_Occupancy.log
+echo  >> ../../Hbond_Occupancy.log
+awk 'NR!=1 && $4!="O2" && $4!="O4" && $4!="O5" && $4!="O6"' summary_HB$j.dat | awk '{a[$1]+=$5}END{for(i in a) print i,a[i]}'  >> ../../Hbond_Occupancy.log
+
+echo  >> ../../Hbond_Occupancy.log
+echo  >> ../../Hbond_Occupancy.log
+
+done
+cd ../../
+
+done

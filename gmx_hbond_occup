@@ -1,0 +1,52 @@
+#This is the automated script to estimate the hydrogen bond occupancy.
+
+#for i in  05.00 05.25 05.50; do
+#for i in 05.00 ; do
+for i in `seq -w 05.00 0.25 15.00`; do
+#for i in `seq -w 06.00 0.50 10.50` `seq -w 10.75 0.50 10.50`; do
+
+if [ "$( echo "$i < 8.6" | bc -l )" -eq 1 ];
+then 
+   cd tassn-$i\disn_sep_1/03_cluster/
+else
+   cd tassn-$i\disn_sep/03_cluster/
+fi
+
+echo "!-------------------------------------------------------------------!"
+echo "                            cbl-avi-TASS-k-$i                        "
+echo "!-------------------------------------------------------------------!"
+
+
+#Step1: Here we will estimate the number of Hbonds, there index and there map.
+for j in `seq 1 5`; do
+
+#file=`ls clusters.xt*$j.xtc`
+#gmx_mpi hbond -f  clusters.xtc0*$j.xtc -s ../tass.tpr -num hbond$j.xvg -hbm hbmap$j.xpm -hbn hbond$j.ndx  <<EOF
+#1
+#14
+#EOF
+#From the hbond.ndx file we will separat only the hydrogen bond index using the script.
+
+#sed -n -e   '1,/hbonds_*/!p'  hbond$j.ndx > hbnn$j.ndx
+
+#Step2: Here we will generate a single pdb file to be read by perl script for the atom labeling.
+#If number of atoms more then 1 lakh in pdb file remove after one lakh. else it will read waters as residue.
+#gmx_mpi trjconv -f ../mdrun_wrap.xtc -s ../mdrun.gro -dump 10 -o hbond.pdb << EOF
+#0
+#EOF
+
+rm summary_HBmap.dat
+#Step 3: Now we will run the perl script to get the hydrogen bond occupancy.
+perl ../../occupancy.pl -s ../../hbond.pdb -map  hbmap$j.xpm -index hbnn$j.ndx
+
+mv summary_HBmap.dat summary_HBmap$j.dat
+awk 'NR==1{print;next}$5>1.00'  summary_HBmap$j.dat > summary_HB$j.dat
+
+done
+cd ../../
+
+echo "!-------------------------------------------------------------------!"
+echo "                Hbond Occupnacy Done for cbl-avi-US-$i"
+echo "!-------------------------------------------------------------------!"
+
+done
