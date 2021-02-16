@@ -1,0 +1,23 @@
+#!/bin/bash
+# To create an empty file 
+
+#for i in `seq -w 05.00 0.25 08.50`; do
+#for i in `seq -w 09.00 0.25 15.00`; do
+for i in  08.75; do
+
+echo  -e  "          TASS  $i           \n" 
+echo  -e  "\n          TASS  $i            " >> CLUSTER-AVG-INFO
+echo   "#-----------------------------" >> CLUSTER-AVG-INFO
+
+
+#read -p "Number of Clusters to copy   " x
+#for j in `seq 1 $x`; do
+#awk   '/^ [ 0-9][0-9]/ {print}' tassn-$i\disn_sep_1/03_cluster/cluster.log >> CLUSTER-AVG-INFO
+awk   '/^ [ 0-9][0-9]/ {print}' tassn-$i\disn_sep/03_cluster/cluster.log >> CLUSTER-AVG-INFO
+
+
+#awk   '/^  []'"$j"'/ {print}' tassn-$i\disn_sep_1/03_cluster/cluster.log >> CLUSTER-AVG-INFO
+#awk  -v a="$x" '/^  [0-a]/ {print}' tassn-$i\disn_sep_1/03_cluster/cluster.log
+#echo "cp ../tassn-$i\disn_sep_1/03_cluster/cluster-TASS-$i-$j.gro ."
+done
+

@@ -1,0 +1,44 @@
+#!/bin/bash
+#for i in `seq -w 05.00 0.50 10.00`; do
+for i in  08.75  ; do
+cd  tassn-$i\disn_sep 
+
+echo "!-------------------------------------------------------------------!"
+echo "                            cbl-avi-TASS-k-$i                        "
+echo "!-------------------------------------------------------------------!"
+
+#Make a separate clustering folder, copy the required files and perform clustering.
+mkdir 03_cluster
+cd 03_cluster
+
+#To copy the index file for Protein+ligand and ligand heavy atoms index.
+cp ../../index.ndx .
+cp ../../average.gro .
+#To generate the trajectory vi protein heavy atom roto-translational least square fitting (2)and centering the protein(2). The output is protein+ligand (22).
+
+gmx_mpi trjconv -f ../tass_wrap.xtc -s average.gro -o tass_align_pro.xtc -n index.ndx -center -fit rot+trans << EOF
+4
+4
+0
+EOF
+
+#To copy the other files, for visualisation like VMD etc.
+
+#cp ../mdrun-pro-lig.gro cluster/
+#cp ../view-align.vmd cluster/
+
+
+#Let's perform the clustering of the ligand binding conformations with RMSD of 2 Ang. Ligand heavy atoms (23) are choosen for RMSD calculation. Top three clusters are saved in .gro format with the protein+ligand (22) output.
+
+gmx_mpi cluster -s ../tass.tpr -f tass_align_pro.xtc -n index.ndx -g cluster.log -o cluster.xpm -cl clusters.xtc -sz clustersize.xvg -method gromos -cutoff 0.3 -wcl 5 -nofit  << EOF
+46
+0
+EOF
+
+echo "!---------------------------------------------------------------------!"
+echo "      ***     cbl-avi-TASS-k-$i clustering has been completed.       ***   "
+echo "!---------------------------------------------------------------------!"
+
+cd ../../
+
+done

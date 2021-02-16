@@ -1,0 +1,10 @@
+#!/bin/bash
+#This is the script to extract clustersize data.
+
+echo "#This is the log file for the cluster size information." > clustersize.log
+
+for i in `seq 4.00 .50 30.00`; do
+clustersize=`sed -n '$p' cbl-avi-US-$i/cluster/clustersize.xvg | awk '{print $1}'`
+echo $i $clustersize >> clustersize.log
+
+done

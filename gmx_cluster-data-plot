@@ -1,0 +1,10 @@
+
+for i in `seq 4.00 0.50 30.00`;do
+echo "$i" > xvg
+grep bar -A 5 cbl-avi-US-$i/cluster/clustersize.xvg  |awk {'print $2'}  | sed -e '1d' | xargs > anji
+paste xvg anji >> cluster-plot.log
+
+done
+
+rm anji
+rm xvg

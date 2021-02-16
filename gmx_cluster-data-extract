@@ -1,0 +1,27 @@
+#!/bin/bash
+# To create an empty file 
+echo "This is Clustering data file for top five clusters." >cluster-data.log
+
+#for i in `seq -w 05.00 0.25 06.50`; do
+for i in  08.75; do
+#for i in `seq -w 08.75 0.25 15.00`; do
+
+echo " ">> cluster-data.log
+echo "cbl-avi-TASS-$i:" >> cluster-data.log
+echo "--------------" >> cluster-data.log
+
+#This is to grep the 5 lines after bar keyword of clustersize.xvg file. We are printing only second column using awk command. And removing bar first line using sed command.
+grep bar -A 20  tassn-$i\disn_sep/03_cluster/clustersize.xvg |awk {'print $2'} > anji
+sed -i '1d' anji 
+
+#Here we are reading the data file. And providing input after done command.
+j=1
+while read file;do
+echo "cluster $j:   $file" >> cluster-data.log
+j=$((j+1))
+done < anji
+
+rm anji
+echo "cbl-avi-TASS-$i Done."
+
+done

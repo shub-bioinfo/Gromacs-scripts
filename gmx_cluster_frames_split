@@ -1,0 +1,19 @@
+#!/bin/bash
+#This is the file to print the first three frames of the average cluster structure into separate files.
+for i in `seq 4.00 0.50 15.00`;do
+
+#This is the awk script and it will print all the frame 
+#awk '/frame/{close(x);x="cluster"++i;}{print >x;}' clusters.gro
+
+#This is the csplit and it will print first three frames and rest all in a separate file.
+
+csplit -sf cluster$i- -n 1 cbl-avi-US-$i/cluster/clusters.gro /frame/ {3}
+
+mv cluster$i-1 cluster$i-1.gro
+mv cluster$i-2 cluster$i-2.gro
+mv cluster$i-3 cluster$i-3.gro
+
+rm cluster$i-0
+rm cluster$i-4
+done
+
